@@ -6,6 +6,9 @@ import About from './components/About';
 import Contact from './components/Contact';
 import NavbarComponent from './components/Navbar';
 import Profile from './components/Profile';
+import Footer from './components/Footer';
+
+
 
 const App = () => {
   return (
@@ -16,9 +19,10 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/profile" element={<Profile />} />
-
+          <Route path="/profile" element={<Profile />} />    
         </Routes>
+        <Footer />
+
       </div>
     </Router>
   );
