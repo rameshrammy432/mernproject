@@ -19,6 +19,7 @@ const cardData = [
     text: 'Dive into the rigorous and exciting life of engineering students. Balancing challenging coursework with hands-on projects, students innovate and collaborate to solve real-world problems collaborate to solve problems.',
     imgUrl: 'images/engineer.jpg',
   },
+  
   {
     title: 'Postgraduate Life',
     text: 'Embark on an advanced academic journey in postgraduate studies. Students engage in specialized research, participate in academic conferences, and contribute to groundbreaking projects in their fields.',

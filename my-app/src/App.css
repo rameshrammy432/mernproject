@@ -24,3 +24,6 @@ nav ul li a {
 nav ul li a:hover {
   text-decoration: underline;
 }
+.rounded-img {
+  border-radius: 20px; /* Adjust the value as needed */
+}
