@@ -13,6 +13,7 @@ const Home = () => {
           <br></br>
         <ImageGrid />
         </Container>
+        <h1>ramesh rammy</h1>
       </div>
   );
 };
