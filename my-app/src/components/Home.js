@@ -4,7 +4,6 @@ import ControlledCarousel from './Carousel';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ImageGrid from './ImageGrid';
 
-
 const Home = () => {
   return (
       <div>
@@ -17,5 +16,5 @@ const Home = () => {
       </div>
   );
 };
-
 export default Home;
+

@@ -48,5 +48,4 @@ const CardGrid = () => {
     </Container>
   );
 };
-
 export default CardGrid;

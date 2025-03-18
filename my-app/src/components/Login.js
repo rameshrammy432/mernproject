@@ -7,18 +7,15 @@ const Login = () => {
     email: '',
     password: ''
   });
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add your form submission logic here
     console.log('Form data submitted:', formData);
   };
-
   return (
     <Container>
       <Row className="justify-content-md-center">
