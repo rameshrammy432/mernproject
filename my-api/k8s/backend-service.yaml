@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: NodePort  # Change from ClusterIP to NodePort
+  selector:
+    app: mern-backend
+  ports:
+    - protocol: TCP
+      port: 5000  # Service port
+      targetPort: 5000  # Backend container port
+      nodePort: 31234  # Ensure it is between 30000-32767

@@ -1,130 +1,110 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Table, Button, Form, Modal, Container } from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
+
+import React, { useState, useEffect } from 'react';
+import { 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress,
+  Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert 
+} from '@mui/material';
+import { fetchUsers, createUser, updateUser, deleteUser } from '../api/userApi';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [formData, setFormData] = useState({ name: "", email: "", age: "", password: "" });
-  const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', age: '' });
 
   useEffect(() => {
-    fetchUsers();
+    (async () => {
+      try {
+        setLoading(true);
+        const response = await fetchUsers();
+        setUsers(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch users');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/users");
-      setUsers(response.data);
-    } catch (error) {
-      setError("Error fetching users. Please try again.");
-    }
-  };
-
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const handleSubmit = async () => {
     try {
-      if (editingUser) {
-        await axios.put(`http://localhost:5000/api/users/${editingUser._id}`, formData);
-      } else {
-        await axios.post("http://localhost:5000/api/users", formData);
-      }
-      fetchUsers();
-      setFormData({ name: "", email: "", age: "", password: "" });
-      setEditingUser(null);
-      setShowModal(false);
-    } catch (error) {
-      setError("Error saving user. Email might already be taken.");
+      currentUser ? await updateUser(currentUser._id, formData) : await createUser(formData);
+      setSnackbar({ open: true, message: currentUser ? 'User updated' : 'User created', severity: 'success' });
+      setOpenDialog(false);
+      const response = await fetchUsers();
+      setUsers(response.data);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Operation failed', severity: 'error' });
     }
   };
 
-  const handleEdit = (user) => {
-    setEditingUser(user);
-    setFormData({ name: user.name, email: user.email, age: user.age, password: "" });
-    setShowModal(true);
-  };
-
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/users/${id}`);
-      fetchUsers();
-    } catch (error) {
-      setError("Error deleting user.");
+      await deleteUser(id);
+      setSnackbar({ open: true, message: 'User deleted', severity: 'success' });
+      setUsers(users.filter(user => user._id !== id));
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Delete failed', severity: 'error' });
     }
   };
 
   return (
-    <Container className="mt-5">
-      <h2 className="text-center">User Management</h2>
-      {error && <p className="text-danger text-center">{error}</p>}
-      <Button onClick={() => setShowModal(true)} className="mb-3">Add User</Button>
-
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Age</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length > 0 ? (
-            users.map((user) => (
-              <tr key={user._id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.age || "N/A"}</td>
-                <td>
-                  <Button variant="warning" size="sm" onClick={() => handleEdit(user)}>Edit</Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(user._id)} className="ms-2">Delete</Button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="text-center">No users found</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
-
-      {/* Modal for Add/Edit User */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{editingUser ? "Edit User" : "Add User"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} required />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Age</Form.Label>
-              <Form.Control type="number" name="age" value={formData.age} onChange={handleChange} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required={!editingUser} />
-            </Form.Group>
-            <Button type="submit">{editingUser ? "Update" : "Add"} User</Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    </Container>
+    <div style={{ padding: '20px' }}>
+      <Typography variant="h4" gutterBottom>User Management</Typography>
+      <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)}>Add New User</Button>
+      {loading ? <CircularProgress /> : error ? <Alert severity="error">{error}</Alert> : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>First Name</TableCell>
+                <TableCell>Last Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Age</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map(user => (
+                <TableRow key={user._id}>
+                  <TableCell>{user.firstName}</TableCell>
+                  <TableCell>{user.lastName}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.age || '-'}</TableCell>
+                  <TableCell>
+                    <Button variant="outlined" onClick={() => { setCurrentUser(user); setFormData(user); setOpenDialog(true); }}>Edit</Button>
+                    <Button variant="outlined" color="error" onClick={() => handleDelete(user._id)}>Delete</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>{currentUser ? 'Edit User' : 'Add New User'}</DialogTitle>
+        <DialogContent>
+          <TextField name="firstName" label="First Name" fullWidth value={formData.firstName} onChange={handleInputChange} required />
+          <TextField name="lastName" label="Last Name" fullWidth value={formData.lastName} onChange={handleInputChange} required />
+          <TextField name="email" label="Email" fullWidth value={formData.email} onChange={handleInputChange} required disabled={!!currentUser} />
+          <TextField name="age" label="Age" fullWidth value={formData.age} onChange={handleInputChange} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleSubmit} color="primary">{currentUser ? 'Update' : 'Create'}</Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
+    </div>
   );
 };
 

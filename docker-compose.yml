@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  my-api:
+    build: ./my-api
+    container_name: my-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://root:example@mongo:27017/mymernapp?authSource=admin&retryWrites=true&w=majority
+      - JWT_SECRET=your_strong_secret_here
+      - CLIENT_URL=http://localhost:3000
+      - PORT=5000
+      - MONGO_CONNECTION_RETRIES=10
+      - MONGO_CONNECTION_DELAY=3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  client:
+    build: ./my-app
+    container_name: my-app
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    depends_on:
+      my-api:
+        condition: service_healthy
+
+volumes:
+  mongo_data:
+    driver: local

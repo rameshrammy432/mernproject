@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: ramesh432/my-api:v2  # Ensure this is the latest version
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: "mongodb+srv://rameshkondru17:rammy432@cluster0.0lcvahr.mongodb.net/mymernapp?retryWrites=true&w=majority"
+            - name: JWT_SECRET
+              value: "your_secure_secret_key"  # Replace with actual secret
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "5000"
+            - name: CLIENT_URL
+               value:"http://frontend.local"

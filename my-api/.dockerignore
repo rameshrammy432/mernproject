@@ -1,0 +1,35 @@
+# Ignore node_modules (Dependencies should be installed inside the container)
+node_modules/
+
+# Ignore build files (if applicable)
+dist/
+build/
+
+# Ignore logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore Git repository files
+.git/
+.gitignore
+
+# Ignore Docker-related files
+Dockerfile
+.dockerignore
+
+# Ignore environment files (Sensitive credentials should not be included in the image)
+.env
+.env.local
+.env.production
+.env.development
+
+# Ignore Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-Specific Files (Mac & Windows)
+.DS_Store
+Thumbs.db
